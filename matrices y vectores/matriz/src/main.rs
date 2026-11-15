@@ -419,10 +419,111 @@ impl Matriz {
 
         mayor
     }
+    //formas en matriz
+    fn ordenar_interno(&mut self){
+        if self.es_cuadrada(){
+            for f in 1 ..self.nro_filas-1{
+                for c in 1..self.nro_columnas-1{
+                    for ff in 1..self.nro_filas-1{
+                        for cc in 1..self.nro_columnas-1{
+                            if self.celdas[ff][cc] > self.celdas[f][c]{
+                                let temp = self.celdas[ff][cc];
+                                self.celdas[ff][cc] = self.celdas[f][c];
+                                self.celdas[f][c] = temp;
+                            }
+                        }
+                    }
+                }
+            }
+        }else{ println!("La matriz no es cuadrada, no se puede ordenar el interior");}
+    }
+
+    // Método para ordenar la matriz completa en forma de serpiente (Boustrophedon)
+    fn ordenar_serpiente(&mut self) {
+        // 1. Pasar todos los elementos de la matriz a un vector lineal temporal
+        let mut vector_lineal: Vec<u64> = Vec::new();
+        for f in 0..self.nro_filas {
+            for c in 0..self.nro_columnas {
+                vector_lineal.push(self.celdas[f][c]);
+            }
+        }
+
+        // 2. Ordenar el vector lineal de menor a mayor (Método Burbuja simple)
+        let n = vector_lineal.len();
+        for i in 0..n {
+            for j in 0..n - 1 - i {
+                if vector_lineal[j] > vector_lineal[j + 1] {
+                    let temp = vector_lineal[j];
+                    vector_lineal[j] = vector_lineal[j + 1];
+                    vector_lineal[j + 1] = temp;
+                }
+            }
+        }
+
+        // 3. Volver a llenar la matriz original siguiendo el patrón de la serpiente
+        let mut indice_vector = 0;
+        for f in 0..self.nro_filas {
+            if f % 2 == 0 {
+                // Filas pares (0, 2, 4...): de izquierda a derecha
+                for c in 0..self.nro_columnas {
+                    self.celdas[f][c] = vector_lineal[indice_vector];
+                    indice_vector += 1;
+                }
+            } else {
+                // Filas impares (1, 3, 5...): de derecha a izquierda (.rev())
+                for c in (0..self.nro_columnas).rev() {
+                    self.celdas[f][c] = vector_lineal[indice_vector];
+                    indice_vector += 1;
+                }
+            }
+        }
+    }
+    // Método para ordenar la matriz completa en forma de serpiente vertical (por columnas)
+    fn ordenar_serpiente_vertical(&mut self) {
+        // 1. Pasar todos los elementos a un vector temporal usando u64
+        let mut vector_lineal: Vec<u64> = Vec::new();
+        for f in 0..self.nro_filas {
+            for c in 0..self.nro_columnas {
+             vector_lineal.push(self.celdas[f][c]);
+            }
+        }
+    
+
+        // 2. Ordenar el vector lineal de menor a mayor (Burbuja)
+        let n = vector_lineal.len();
+        for i in 0..n {
+            for j in 0..n - 1 - i {
+                if vector_lineal[j] > vector_lineal[j + 1] {
+                    let temp = vector_lineal[j];
+                    vector_lineal[j] = vector_lineal[j + 1];
+                    vector_lineal[j + 1] = temp;
+                }
+            }
+        }
+
+        // 3. Volver a llenar la matriz recorriendo primero las COLUMNAS (c)
+        let mut indice_vector: usize = 0;
+        for c in 0..self.nro_columnas {
+            if c % 2 == 0 {
+                // Columnas pares (0, 2, 4...): de arriba hacia abajo
+                for f in 0..self.nro_filas {
+                    self.celdas[f][c] = vector_lineal[indice_vector];
+                    indice_vector += 1;
+                }
+            } else {
+                // Columnas impares (1, 3, 5...): de abajo hacia arriba (.rev())
+                for f in (0..self.nro_filas).rev() {
+                    self.celdas[f][c] = vector_lineal[indice_vector];
+                    indice_vector += 1;
+                }
+            }
+        }
+    }
+
+
     //fn mostrar_central(&self) {
-    //    for f in 0..self.nro_filas{
-    //        for c in 0..self.nro_columnas {
-    //            if f > 0  && f < self.nro_filas -1 && c>0 && c<self.nro_columnas -1 { 
+    //    for f in 1..self.nro_filas-1{
+    //        for c in 1..self.nro_columnas-1 {
     //                print!("{:^9}", self.celdas[f][c]);
     //            }
     //        }
@@ -507,7 +608,7 @@ impl Matriz {
 }
 
 fn main() {
-    let mut m = Matriz::new(3, 4);
+    let mut m = Matriz::new(4, 4);
 
     m.set_celda(0, 0, 1);
     m.set_celda(0, 1, 5);
@@ -524,20 +625,30 @@ fn main() {
     m.set_celda(2, 2, 9);
     m.set_celda(2, 3, 21);
 
+    m.set_celda(3, 0, 22);
+    m.set_celda(3, 1, 23);
+    m.set_celda(3, 2, 24);
+    m.set_celda(3, 3, 25);
+
     m.mostrar();
 
-    println!("Suma = {}", m.suma());
-    println!("Pares = {}", m.pares());
-    println!("Promedio = {}", m.promedio());
-    println!("Mayor = {}", m.mayor());
-    println!("Apariciones de 5 = {}", m.contar_apariciones(5));
-    let (f, c) = m.busqueda_bin(8);
-    println!("8 encontrado en ({}, {})", f, c);
-    println!("Mayor al promedio = {}", m.may_al_promedio_de_la_matriz());
-    println!( "Central = ");
-    println!("numeros mayores a 10 = {:?}", m.numeros_mayores_a(10)); //{:?} es para imprimir un vector
+//    println!("Pares = {}", m.pares());
+//    println!("Promedio = {}", m.promedio());
+//    println!("Mayor = {}", m.mayor());
+//    println!("Apariciones de 5 = {}", m.contar_apariciones(5));
+ //   let (f, c) = m.busqueda_bin(8);
+//    println!("8 encontrado en ({}, {})", f, c);
+//    println!("Mayor al promedio = {}", m.may_al_promedio_de_la_matriz());
+//    println!( "Central = ");
+//    println!("numeros mayores a 10 = {:?}", m.numeros_mayores_a(10)); //{:?} es para imprimir un vector
   //  m.ordenamiento_linealv1(true);//true  o false para orden ascendente o descendente
-//m.mostrar();
-    m.mostrar_sinborde().mostrar();
-    m.mostrar_sinbordeconrecorrer().mostrar();
+    m.mostrar();
+println!("__________________________________________________________");
+    m.ordenar_interno();
+    m.mostrar();
+//    m.mostrar_sinborde().mostrar();
+//    m.mostrar_sinbordeconrecorrer().mostrar();
+println!("__________________________________________________________");
+    m.ordenar_serpiente();
+    m.mostrar();
 }
